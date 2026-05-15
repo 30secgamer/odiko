@@ -1,19 +1,45 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import {
+  Suspense,
+  useRef,
+  useState,
+} from "react";
 
-export default function VerifyPage() {
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
-  const [loading, setLoading] = useState(false);
+import {
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
+
+function VerifyContent() {
+
+  const [otp, setOtp] = useState([
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+  ]);
+
+  const [loading, setLoading] =
+    useState(false);
 
   const inputs = useRef([]);
-  const params = useSearchParams();
+
+  const params =
+    useSearchParams();
+
   const router = useRouter();
 
-  const phone = params.get("phone");
-  const lang = params.get("lang") || "en";
-  const devOtp = params.get("otp");
+  const phone =
+    params.get("phone");
+
+  const lang =
+    params.get("lang") || "en";
+
+  const devOtp =
+    params.get("otp");
 
   const text = {
     en: {
@@ -21,6 +47,7 @@ export default function VerifyPage() {
       subtitle: `Code sent to +91 ${phone}`,
       button: "Verify",
     },
+
     ml: {
       title: "OTP സ്ഥിരീകരിക്കുക",
       subtitle: `+91 ${phone} ലേക്ക് കോഡ് അയച്ചു`,
@@ -28,74 +55,133 @@ export default function VerifyPage() {
     },
   };
 
-  const handleChange = (value, index) => {
-    if (!/^\d?$/.test(value)) return;
+  const handleChange = (
+    value,
+    index
+  ) => {
+
+    if (!/^\d?$/.test(value))
+      return;
 
     const newOtp = [...otp];
+
     newOtp[index] = value;
+
     setOtp(newOtp);
 
-    if (value && index < 5) {
-      inputs.current[index + 1].focus();
+    if (
+      value &&
+      index < 5
+    ) {
+      inputs.current[
+        index + 1
+      ]?.focus();
     }
   };
 
-  const handleKeyDown = (e, index) => {
-    if (e.key === "Backspace" && !otp[index] && index > 0) {
-      inputs.current[index - 1].focus();
+  const handleKeyDown = (
+    e,
+    index
+  ) => {
+
+    if (
+      e.key === "Backspace" &&
+      !otp[index] &&
+      index > 0
+    ) {
+      inputs.current[
+        index - 1
+      ]?.focus();
     }
   };
 
-  const verifyOtp = async () => {
-    const finalOtp = otp.join("");
+  const verifyOtp =
+    async () => {
 
-    if (finalOtp.length !== 6) {
-      alert("Enter complete OTP");
-      return;
-    }
+      const finalOtp =
+        otp.join("");
 
-    try {
-      setLoading(true);
+      if (
+        finalOtp.length !== 6
+      ) {
 
-      const res = await fetch("/api/auth/verify-otp", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ phone, otp: finalOtp }),
-      });
+        alert(
+          "Enter complete OTP"
+        );
 
-      if (!res.ok) {
-        alert("Invalid OTP");
-        setLoading(false);
         return;
       }
 
-      const data = await res.json();
-      localStorage.setItem("token", data.token);
+      try {
 
-      localStorage.setItem(
-  "token",
-  data.token
-);
+        setLoading(true);
 
-if (data.onboardingCompleted) {
+        const res =
+          await fetch(
+            "/api/auth/verify-otp",
+            {
+              method: "POST",
 
-  router.push("/dashboard");
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
 
-} else {
+              body: JSON.stringify({
+                phone,
+                otp: finalOtp,
+              }),
+            }
+          );
 
-  router.push("/onboarding");
-}
+        if (!res.ok) {
 
-    } catch {
-      alert("Something went wrong");
-    } finally {
-      setLoading(false);
-    }
-  };
+          alert("Invalid OTP");
 
-  const isComplete = otp.every((d) => d !== "");
+          setLoading(false);
+
+          return;
+        }
+
+        const data =
+          await res.json();
+
+        localStorage.setItem(
+          "token",
+          data.token
+        );
+
+        if (
+          data.onboardingCompleted
+        ) {
+
+          router.push(
+            "/dashboard"
+          );
+
+        } else {
+
+          router.push(
+            "/onboarding"
+          );
+        }
+
+      } catch {
+
+        alert(
+          "Something went wrong"
+        );
+
+      } finally {
+
+        setLoading(false);
+      }
+    };
+
+  const isComplete =
+    otp.every(
+      (d) => d !== ""
+    );
 
   return (
     <div className="min-h-screen bg-[#f4f4f5] flex items-center justify-center px-4">
@@ -111,67 +197,125 @@ if (data.onboardingCompleted) {
           <p className="text-sm text-gray-500 mb-6">
             {text[lang].subtitle}
           </p>
+
+          {/* DEV OTP */}
           {devOtp && (
 
-  <div className="mb-5 bg-black text-white rounded-xl p-4 text-center">
+            <div className="mb-5 bg-black text-white rounded-xl p-4 text-center">
 
-    <p className="text-xs text-gray-400 mb-1">
-      Test OTP
-    </p>
+              <p className="text-xs text-gray-400 mb-1">
+                Test OTP
+              </p>
 
-    <p className="text-3xl font-bold tracking-[10px]">
-      {devOtp}
-    </p>
+              <p className="text-3xl font-bold tracking-[10px]">
+                {devOtp}
+              </p>
 
-  </div>
+            </div>
 
-)}
+          )}
 
-          {/* UPDATED OTP BOXES */}
+          {/* OTP INPUTS */}
           <div className="flex justify-between mb-6">
-            {otp.map((digit, i) => (
-              <input
-                key={i}
-                ref={(el) => (inputs.current[i] = el)}
-                type="text"
-                inputMode="numeric"
-                maxLength="1"
-                value={digit}
-                onChange={(e) => handleChange(e.target.value, i)}
-                onKeyDown={(e) => handleKeyDown(e, i)}
-                style={{ color: "#000" }}
-                className="
-                  w-12 h-14
-                  text-center
-                  text-2xl font-semibold
-                  text-black caret-black
-                  bg-white
-                  border border-gray-300
-                  rounded-lg
-                  focus:border-black
-                  focus:ring-2 focus:ring-black/10
-                  outline-none
-                  transition
-                "
-              />
-            ))}
+
+            {otp.map(
+              (digit, i) => (
+
+                <input
+                  key={i}
+
+                  ref={(el) =>
+                    (inputs.current[
+                      i
+                    ] = el)
+                  }
+
+                  type="text"
+
+                  inputMode="numeric"
+
+                  maxLength="1"
+
+                  value={digit}
+
+                  onChange={(e) =>
+                    handleChange(
+                      e.target.value,
+                      i
+                    )
+                  }
+
+                  onKeyDown={(e) =>
+                    handleKeyDown(
+                      e,
+                      i
+                    )
+                  }
+
+                  className="
+                    w-12 h-14
+                    text-center
+                    text-2xl font-semibold
+                    text-black caret-black
+                    bg-white
+                    border border-gray-300
+                    rounded-lg
+                    focus:border-black
+                    focus:ring-2 focus:ring-black/10
+                    outline-none
+                    transition
+                  "
+                />
+              )
+            )}
+
           </div>
 
+          {/* BUTTON */}
           <button
             onClick={verifyOtp}
-            disabled={!isComplete || loading}
+
+            disabled={
+              !isComplete ||
+              loading
+            }
+
             className={`w-full py-3 rounded-lg text-sm font-medium transition ${
               !isComplete || loading
                 ? "bg-gray-200 text-gray-400"
                 : "bg-black text-white hover:bg-[#111] active:scale-[0.98]"
             }`}
           >
-            {loading ? "Verifying..." : text[lang].button}
+
+            {loading
+              ? "Verifying..."
+              : text[lang]
+                  .button}
+
           </button>
 
         </div>
 
       </div>
+
     </div>
+  );
+}
+
+export default function VerifyPage() {
+
+  return (
+
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          Loading...
+        </div>
+      }
+    >
+
+      <VerifyContent />
+
+    </Suspense>
   );
 }
