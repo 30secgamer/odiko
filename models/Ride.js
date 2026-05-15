@@ -1,0 +1,72 @@
+import mongoose from "mongoose";
+
+const RideSchema = new mongoose.Schema(
+  {
+    // 👤 PASSENGER
+    passengerName: String,
+    passengerPhone: String,
+
+    // 📍 LOCATIONS
+    pickup: String,
+    drop: String,
+
+    pickupLat: Number,
+    pickupLon: Number,
+
+    dropLat: Number,
+    dropLon: Number,
+
+    // 💰 RIDE INFO
+    distance: Number,
+    fare: Number,
+
+    // 🔐 OTP
+    otp: {
+      type: String,
+    },
+
+    otpVerified: {
+      type: Boolean,
+      default: false,
+    },
+
+    // 🚕 RIDE STATUS
+    status: {
+      type: String,
+      enum: [
+        "searching",
+        "accepted",
+        "arriving",
+        "pickedup",
+        "completed",
+        "cancelled",
+      ],
+      default: "searching",
+    },
+
+    // 👨‍✈️ DRIVER
+    driverId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Driver",
+    },
+
+    driverName: String,
+    driverPhone: String,
+    vehicleNumber: String,
+
+    // 📡 LIVE DRIVER LOCATION
+    driverLat: Number,
+    driverLon: Number,
+
+    // ⏰ TIMES
+    acceptedAt: Date,
+    pickedUpAt: Date,
+    completedAt: Date,
+  },
+  {
+    timestamps: true,
+  }
+);
+
+export default mongoose.models.Ride ||
+  mongoose.model("Ride", RideSchema);
