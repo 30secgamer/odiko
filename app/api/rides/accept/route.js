@@ -68,6 +68,8 @@ export async function POST(req) {
 
     // ✅ UPDATE RIDE
     ride.status = "accepted";
+    ride.preferredDriverExpiresAt =
+  null;
 
     ride.driverId =
       driver._id;

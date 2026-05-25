@@ -54,6 +54,18 @@ const RideSchema = new mongoose.Schema(
     driverPhone: String,
     vehicleNumber: String,
 
+    // ⭐ FAVORITE DRIVER SYSTEM
+    preferredDriverId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Driver",
+      default: null,
+    },
+
+    preferredDriverExpiresAt: {
+      type: Date,
+      default: null,
+    },
+
     // 📡 LIVE DRIVER LOCATION
     driverLat: Number,
     driverLon: Number,
@@ -63,6 +75,7 @@ const RideSchema = new mongoose.Schema(
     pickedUpAt: Date,
     completedAt: Date,
   },
+
   {
     timestamps: true,
   }

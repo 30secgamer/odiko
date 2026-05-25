@@ -26,6 +26,9 @@ export default function BookingPage() {
   useState(null);
   const [activeRide, setActiveRide] =
   useState(null);
+  const [showFavoritePopup,
+  setShowFavoritePopup] =
+  useState(false);
 
   // 🚕 FETCH FARE
   const calculateFare = async () => {
@@ -330,6 +333,21 @@ useEffect(() => {
 
 }, [user]);
 
+useEffect(() => {
+
+  if (
+    activeRide?.status ===
+      "completed" &&
+
+    activeRide?.driverId
+  ) {
+
+    setShowFavoritePopup(true);
+
+  }
+
+}, [activeRide]);
+
 // 🚕 BOOK RIDE
 const bookRide = async () => {
 
@@ -385,6 +403,57 @@ passengerPhone: user?.phone,
   } catch (err) {
     console.log(err);
   }
+};
+const saveFavoriteDriver =
+  async (favorite) => {
+
+    try {
+
+      const res = await fetch(
+        "/api/rides/favorite-driver",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+
+          body: JSON.stringify({
+            passengerPhone:
+              user.phone,
+
+            driverId:
+              activeRide.driverId,
+
+            favorite,
+          }),
+        }
+      );
+
+      const data =
+        await res.json();
+
+      if (!res.ok) {
+
+        alert(data.message);
+
+        return;
+      }
+
+      setShowFavoritePopup(false);
+
+      alert(
+        favorite
+          ? "Driver added to favorites"
+          : "Okay"
+      );
+
+    } catch (err) {
+
+      console.log(err);
+
+    }
 };
 
   return (
@@ -762,6 +831,58 @@ passengerPhone: user?.phone,
 )}
 
       </div>
+      {/* FAVORITE DRIVER POPUP */}
+{showFavoritePopup && (
+
+  <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+
+    <div className="bg-white w-full max-w-sm rounded-[30px] p-6">
+
+      <div className="text-center">
+
+        <div className="text-5xl mb-4">
+          ⭐
+        </div>
+
+        <h2 className="text-xl font-bold text-gray-900 mb-2">
+          Favorite this driver?
+        </h2>
+
+        <p className="text-sm text-gray-500 mb-6">
+
+          Next time we will prioritize this driver first if available.
+
+        </p>
+
+      </div>
+
+      <div className="flex gap-3">
+
+        <button
+          onClick={() =>
+            saveFavoriteDriver(true)
+          }
+          className="flex-1 h-12 rounded-2xl bg-black text-white font-semibold"
+        >
+          Yes
+        </button>
+
+        <button
+          onClick={() =>
+            saveFavoriteDriver(false)
+          }
+          className="flex-1 h-12 rounded-2xl border border-gray-300 text-gray-700 font-semibold"
+        >
+          No
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+)}
 
     </div>
   );

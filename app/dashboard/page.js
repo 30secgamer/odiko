@@ -33,9 +33,9 @@ useEffect(() => {
 
     try {
 
-      const res = await fetch(
-        "/api/rides/available"
-      );
+    const res = await fetch(
+  `/api/rides/available?driverId=${driver._id}`
+);
 
       const data =
         await res.json();

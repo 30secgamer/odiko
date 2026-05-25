@@ -1,12 +1,36 @@
 import { NextResponse } from "next/server";
 import Ride from "@/models/Ride";
 import { connectDB } from "@/lib/db";
+import FavoriteDriver
+from "@/models/FavoriteDriver";
+
+import Driver
+from "@/models/Driver";
 
 export async function POST(req) {
 
   try {
 
     await connectDB();
+    // ⭐ CHECK FAVORITE DRIVER
+const favorite =
+  await FavoriteDriver.findOne({
+    passengerPhone,
+  });
+
+let favoriteDriver = null;
+
+if (favorite) {
+
+  favoriteDriver =
+    await Driver.findOne({
+      _id: favorite.driverId,
+
+      isOnline: true,
+
+      status: "approved",
+    });
+}
 
     const body =
       await req.json();
@@ -104,6 +128,15 @@ export async function POST(req) {
         otp,
 
         otpVerified: false,
+  preferredDriverId:
+  favoriteDriver?._id || null,
+
+preferredDriverExpiresAt:
+  favoriteDriver
+    ? new Date(
+        Date.now() + 15000
+      )
+    : null,
 
         status: "searching",
       });
