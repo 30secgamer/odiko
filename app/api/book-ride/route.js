@@ -1,37 +1,18 @@
 import { NextResponse } from "next/server";
-import Ride from "@/models/Ride";
-import { connectDB } from "@/lib/db";
-import FavoriteDriver
-from "@/models/FavoriteDriver";
 
-import Driver
-from "@/models/Driver";
+import Ride from "@/models/Ride";
+import Driver from "@/models/Driver";
+import FavoriteDriver from "@/models/FavoriteDriver";
+
+import { connectDB } from "@/lib/db";
 
 export async function POST(req) {
 
   try {
 
     await connectDB();
-    // ⭐ CHECK FAVORITE DRIVER
-const favorite =
-  await FavoriteDriver.findOne({
-    passengerPhone,
-  });
 
-let favoriteDriver = null;
-
-if (favorite) {
-
-  favoriteDriver =
-    await Driver.findOne({
-      _id: favorite.driverId,
-
-      isOnline: true,
-
-      status: "approved",
-    });
-}
-
+    // 📦 GET BODY
     const body =
       await req.json();
 
@@ -71,7 +52,7 @@ if (favorite) {
       );
     }
 
-    // 🚫 CHECK EXISTING ACTIVE RIDE
+    // 🚫 CHECK ACTIVE RIDE
     const existingRide =
       await Ride.findOne({
         passengerPhone,
@@ -99,11 +80,34 @@ if (favorite) {
       );
     }
 
+    // ⭐ FIND FAVORITE DRIVER
+    const favorite =
+      await FavoriteDriver.findOne({
+        passengerPhone,
+      });
+
+    let favoriteDriver =
+      null;
+
+    if (favorite) {
+
+      favoriteDriver =
+        await Driver.findOne({
+          _id:
+            favorite.driverId,
+
+          isOnline: true,
+
+          status: "approved",
+        });
+    }
+
     // 🔐 GENERATE OTP
     const otp =
       Math.floor(
         1000 +
-          Math.random() * 9000
+          Math.random() *
+            9000
       ).toString();
 
     // 🚕 CREATE RIDE
@@ -128,15 +132,19 @@ if (favorite) {
         otp,
 
         otpVerified: false,
-  preferredDriverId:
-  favoriteDriver?._id || null,
 
-preferredDriverExpiresAt:
-  favoriteDriver
-    ? new Date(
-        Date.now() + 15000
-      )
-    : null,
+        // ⭐ FAVORITE DRIVER
+        preferredDriverId:
+          favoriteDriver?._id ||
+          null,
+
+        preferredDriverExpiresAt:
+          favoriteDriver
+            ? new Date(
+                Date.now() +
+                  15000
+              )
+            : null,
 
         status: "searching",
       });
